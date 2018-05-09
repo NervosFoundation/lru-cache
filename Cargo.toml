@@ -1,0 +1,12 @@
+[package]
+name = "lru-cache"
+version = "0.1.0"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
+
+[features]
+heapsize_impl = ["heapsize", "linked-hash-map/heapsize_impl"]
+
+[dependencies]
+fnv = "1.0"
+linked-hash-map = "0.5"
+heapsize = { version = "0.4", optional = true }
