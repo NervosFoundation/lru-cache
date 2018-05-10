@@ -17,6 +17,8 @@ pub type LruCacheIter<'a, K, V> = linked_hash_map::Iter<'a, K, V>;
 /// A iterator over the mutable items of the LRU cache.
 pub type LruCacheIterMut<'a, K, V> = linked_hash_map::IterMut<'a, K, V>;
 
+pub type LruCacheKeys<'a, K, V> = linked_hash_map::Keys<'a, K, V>;
+
 #[derive(Clone, Debug, Default)]
 pub struct LruCache<K: Eq + Hash, V> {
     inner: FnvLinkedMap<K, V>,
@@ -85,6 +87,10 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
 
     pub fn clear(&mut self) {
         self.inner.clear();
+    }
+
+    pub fn keys(&self) -> LruCacheKeys<K, V> {
+        self.inner.keys()
     }
 
     pub fn iter(&self) -> LruCacheIter<K, V> {
