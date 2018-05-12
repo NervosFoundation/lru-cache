@@ -72,6 +72,25 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
         old_val
     }
 
+    pub fn remove<Q: ?Sized>(&mut self, k: &Q) -> Option<V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.inner.remove(k)
+    }
+
+    pub fn capacity(&self) -> usize {
+        self.max_size
+    }
+
+    pub fn set_capacity(&mut self, capacity: usize) {
+        for _ in capacity..self.len() {
+            self.pop_front();
+        }
+        self.max_size = capacity;
+    }
+
     pub fn len(&self) -> usize {
         self.inner.len()
     }
