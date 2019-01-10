@@ -1,10 +1,7 @@
-extern crate fnv;
-extern crate linked_hash_map;
-
 use fnv::FnvBuildHasher;
 use linked_hash_map::LinkedHashMap;
-use std::hash::Hash;
 use std::borrow::Borrow;
+use std::hash::Hash;
 
 #[cfg(feature = "heapsize_impl")]
 mod heapsize;
@@ -19,17 +16,17 @@ pub type LruCacheIterMut<'a, K, V> = linked_hash_map::IterMut<'a, K, V>;
 
 pub type LruCacheKeys<'a, K, V> = linked_hash_map::Keys<'a, K, V>;
 
+pub type LruCacheEntry<'a, K, V> = linked_hash_map::Entry<'a, K, V, FnvBuildHasher>;
+
 #[derive(Clone, Debug, Default)]
 pub struct LruCache<K: Eq + Hash, V> {
     inner: FnvLinkedMap<K, V>,
     max_size: usize,
-    refresh: bool,
 }
 
 impl<K: Eq + Hash, V> LruCache<K, V> {
-    pub fn new(capacity: usize, refresh: bool) -> Self {
+    pub fn new(capacity: usize) -> Self {
         LruCache {
-            refresh,
             inner: FnvLinkedMap::default(),
             max_size: capacity,
         }
@@ -44,16 +41,20 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
     }
 
     //refresh order
+    pub fn get_refresh<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.inner.get_refresh(k)
+    }
+
     pub fn get_mut<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut V>
     where
         K: Borrow<Q>,
         Q: Hash + Eq,
     {
-        if self.refresh {
-            self.inner.get_refresh(k)
-        } else {
-            self.inner.get_mut(k)
-        }
+        self.inner.get_mut(k)
     }
 
     pub fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
@@ -120,6 +121,10 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
     pub fn iter_mut(&mut self) -> LruCacheIterMut<K, V> {
         self.inner.iter_mut()
     }
+
+    pub fn entry(&mut self, k: K) -> LruCacheEntry<K, V> {
+        self.inner.entry(k)
+    }
 }
 
 #[cfg(test)]
@@ -128,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_put_and_get() {
-        let mut cache = LruCache::new(2, false);
+        let mut cache = LruCache::new(2);
         cache.insert(1, 10);
         cache.insert(2, 20);
         assert_eq!(cache.get(&1), Some(&10));
@@ -138,7 +143,7 @@ mod tests {
 
     #[test]
     fn test_put_update() {
-        let mut cache = LruCache::new(1, false);
+        let mut cache = LruCache::new(1);
         cache.insert("1", 10);
         cache.insert("1", 19);
         assert_eq!(cache.get("1"), Some(&19));
@@ -147,14 +152,14 @@ mod tests {
 
     #[test]
     fn test_contains_key() {
-        let mut cache = LruCache::new(1, false);
+        let mut cache = LruCache::new(1);
         cache.insert("1", 10);
         assert_eq!(cache.contains_key("1"), true);
     }
 
     #[test]
     fn test_expire_lru() {
-        let mut cache = LruCache::new(2, false);
+        let mut cache = LruCache::new(2);
         cache.insert("foo1", "bar1");
         cache.insert("foo2", "bar2");
         cache.insert("foo3", "bar3");

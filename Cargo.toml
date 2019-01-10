@@ -2,6 +2,7 @@
 name = "lru-cache"
 version = "0.1.0"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
+edition = "2018"
 
 [features]
 heapsize_impl = ["heapsize", "linked-hash-map/heapsize_impl"]
