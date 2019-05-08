@@ -18,6 +18,8 @@ pub type LruCacheKeys<'a, K, V> = linked_hash_map::Keys<'a, K, V>;
 
 pub type LruCacheEntry<'a, K, V> = linked_hash_map::Entry<'a, K, V, FnvBuildHasher>;
 
+pub type LruCacheEntries<'a, K, V> = linked_hash_map::Entries<'a, K, V, FnvBuildHasher>;
+
 #[derive(Clone, Debug, Default)]
 pub struct LruCache<K: Eq + Hash, V> {
     inner: FnvLinkedMap<K, V>,
@@ -124,6 +126,10 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
 
     pub fn entry(&mut self, k: K) -> LruCacheEntry<K, V> {
         self.inner.entry(k)
+    }
+
+    pub fn entries(&mut self) -> LruCacheEntries<K, V> {
+        self.inner.entries()
     }
 }
 
