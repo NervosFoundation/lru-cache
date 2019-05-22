@@ -107,6 +107,11 @@ impl<K: Eq + Hash, V> LruCache<K, V> {
         self.inner.pop_front()
     }
 
+    #[inline]
+    pub fn peek_front(&mut self) -> Option<(&K, &V)> {
+        self.inner.front()
+    }
+
     pub fn clear(&mut self) {
         self.inner.clear();
     }
